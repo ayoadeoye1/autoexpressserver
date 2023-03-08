@@ -1,0 +1,32 @@
+POST http://localhost:8000/api/motorcycle
+Content-Type: application/json
+
+{
+    "name": "honda motorcycle",
+    "madeBy": "Bajaj", 
+    "model": "kkk2020", 
+    "price": 1000, 
+    "status": "available", 
+    "mileage": 106.40, 
+    "state": "new", 
+    "year": 2020
+}
+
+###
+
+PATCH  http://localhost:8000/api/motorcycle/6407e3470e2730b1d60f1e09
+Content-Type: application/json
+
+{
+    "name": "boxer hthh",
+    "madeBy": "Bajaj A40", 
+    "model": "ssk202", 
+    "price": 1200,
+    "status": "available", 
+    "mileage": 126.40, 
+    "state": "new", 
+    "year": 2023
+}
+
+###
+DELETE  http://localhost:8000/api/motorcycle/6407e3470e2730b1d60f1e09
