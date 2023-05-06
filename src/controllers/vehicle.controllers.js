@@ -1,14 +1,19 @@
 import VehicleDB from '../models/vehicle.model.js';
+import cloudinary from '../utils/cloudinary.js';
 
 export const postVehicle = async(req, res) =>{
     const { name, madeBy, model, price, status, mileage, transmission, drivetrain, state, year } = req.body;
-    const addedBy = 'jj'//req.user.username;
-    const image = '6797908'//req.files[0];
+    const addedBy = req.dbUser.username;
+    const image = req.file.path;
 
     if(!name || !madeBy || !model || !status || !mileage || !transmission || !drivetrain || !state || !year || !addedBy || !image){
         res.status(400).json('one or more parameter(s) are missing!');
     }
+
     try {
+        const imageName = await req.imageName;
+        const result = await cloudinary.uploader.upload(image);
+        console.log(result);
         const newVehicle = new VehicleDB({
             name, 
             madeBy, 
@@ -21,7 +26,8 @@ export const postVehicle = async(req, res) =>{
             state, 
             year,
             addedBy,
-            imageUrl: image
+            imageName,
+            imageUrl: result.public_id
         })
     
         await newVehicle.save();
@@ -35,11 +41,20 @@ export const postVehicle = async(req, res) =>{
 export const patchVehicle = async(req, res) =>{
     const { name, madeBy, model, price, status, mileage, transmission, drivetrain, state, year } = req.body;
     const addedBy = req.user.username;
-    const image = req.files[0];
+    const image = req.file.path;
 
     try {
+
         let prevData = await VehicleDB.findOne({_id: req.params.id});
 
+        let result;
+        if(req.file){
+            await cloudinary.uploader.destroy(prevData.imageUrl);
+            result = await cloudinary.uploader.upload(image);
+        }
+
+        const imageName = await req.imageName;
+        
         prevData.name = name;
         prevData.madeBy = madeBy;
         prevData.model = model;
@@ -51,10 +66,11 @@ export const patchVehicle = async(req, res) =>{
         prevData.state = state;
         prevData.year = year;
         prevData.addedBy = addedBy;
-        prevData.imageUrl = image;
+        prevData.imageName = imageName;
+        prevData.imageUrl = result.public_id;
         
         await prevData.save();
-        res.status(201).json('vehicle instance updated successfully!');
+        res.status(201).json(prevData);
     } catch (error) {
         console.log(error.message)
         res.status(400).json(error.message);
@@ -64,9 +80,10 @@ export const patchVehicle = async(req, res) =>{
 export const deleteVehicle = async(req, res) =>{
 
     try {
-        let deleteData = await VehicleDB.findOne({_id: req.params.id});
+        const del = VehicleDB.findById({_id: req.params.id});
+        await cloudinary.uploader.destroy(del.imageUrl);
+        await VehicleDB.deleteOne({_id: req.params.id});
         
-        await deleteData.remove();
         res.status(201).json('vehicle instance deleted successfully!');
     } catch (error) {
         console.log(error.message)
@@ -77,7 +94,7 @@ export const deleteVehicle = async(req, res) =>{
 export const getVehicle = async(req, res) =>{
 
     try {
-        let getData = await VehicleDB.find().sort((a, b) => a-b);
+        let getData = await VehicleDB.find().sort();
         
         res.status(201).json(getData);
     } catch (error) {

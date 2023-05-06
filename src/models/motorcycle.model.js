@@ -41,6 +41,10 @@ const motorcycleSchema = new mongoose.Schema({
         type: String,
         require: true
     },
+    imageName:{
+        type: String,
+        require: true
+    },
     dateAdded:{ 
         type: Date,
         default: new Date()

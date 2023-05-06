@@ -55,9 +55,8 @@ export const editDealer = async(req, res) =>{
 export const deleteDealer = async(req, res) =>{
 
     try {
-        const user = await DealerDB.findOne({_id: req.params.id});
+        await DealerDB.deleteOne({_id: req.params.id});
 
-        await user.remove();
         res.status(201).json('dealer deleted successfully');
     } catch (error) {
         console.log(error.message)
@@ -68,7 +67,7 @@ export const deleteDealer = async(req, res) =>{
 export const getDealers = async(req, res) =>{
 
     try {
-        const user = await DealerDB.find().sort((a, b) => a-b);
+        const user = await DealerDB.find().sort();
 
         res.status(201).json(user);
     } catch (error) {

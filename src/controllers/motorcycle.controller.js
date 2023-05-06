@@ -1,30 +1,37 @@
 import MotorcycleDB from '../models/motorcycle.model.js';
+import cloudinary from '../utils/cloudinary.js';
 
 export const postMcycle = async(req, res) =>{
     const { name, madeBy, model, price, status, mileage, state, year } = req.body;
-    const addedBy = 'jj'//req.user.username;
-    const image = '6797908'//req.files[0];
+    const addedBy = req.dbUser.username;
+    const image = req.file?.path;
+    console.log(image, req.file)
 
-    if(!name || !madeBy || !model || !status || !mileage || !state || !year || !addedBy || !image){
+    if(!name || !madeBy || !model || !status || !mileage || !state || !year || !addedBy){
         res.status(400).json('one or more parameter(s) are missing!');
     }
+
     try {
+        const imageName = await req.imageName;
+        const result = await cloudinary.uploader.upload(image);
+        console.log(result);
         const newMcycle = new MotorcycleDB({
-            name, 
-            madeBy, 
-            model, 
+            name,
+            madeBy,
+            model,
             price, 
             status, 
             mileage, 
             state, 
             year,
             addedBy,
-            imageUrl: image
+            imageName,
+            imageUrl: result.public_id
         })
     
         await newMcycle.save();
-        console.log(newMcycle)
-        res.status(201).json('motorcycle instance added successfully!');
+        
+        res.status(201).json(newMcycle);
     } catch (error) {
         console.log(error.message)
         res.status(400).json(error.message);
@@ -33,12 +40,19 @@ export const postMcycle = async(req, res) =>{
 
 export const patchMcycle = async(req, res) =>{
     const { name, madeBy, model, price, status, mileage, state, year } = req.body;
-    const addedBy = 'jj'//req.user.username;
-    const image = '6797908'//req.files[0];
+    const addedBy = 'jj'//req.dbUser;
+    const image = req.file.path;
 
-    const id = req.params.id;
     try {
-        let prevData = await MotorcycleDB.findById({_id: id});
+        let prevData = await MotorcycleDB.findById({_id: req.params.id});
+
+        let result;
+        if(req.file){
+            await cloudinary.uploader.destroy(prevData.imageUrl);
+            result = await cloudinary.uploader.upload(image);
+        }
+
+        const imageName = await req.imageName;
 
         prevData.name = name;
         prevData.madeBy = madeBy;
@@ -49,11 +63,12 @@ export const patchMcycle = async(req, res) =>{
         prevData.state = state;
         prevData.year = year;
         prevData.addedBy = addedBy;
-        prevData.imageUrl = image;
+        prevData.imageName = imageName;
+        prevData.imageUrl = result.public_id;
         
         await prevData.save();
         
-        res.status(201).json('motorcycle instance updated successfully!');
+        res.status(201).json(prevData);
     } catch (error) {
         console.log(error.message)
         res.status(400).json(error.message);
@@ -62,11 +77,12 @@ export const patchMcycle = async(req, res) =>{
 
 export const deleteMcycle = async(req, res) =>{
 
-    const id = req.params.id
     try {
-        await MotorcycleDB.deleteOne({_id: id});
+        const del = MotorcycleDB.findById({_id: req.params.id});
+        await cloudinary.uploader.destroy(del.imageUrl);
+        await MotorcycleDB.deleteOne({_id: req.params.id});
         
-        res.status(201).json('vehicle instance deleted successfully!');
+        res.status(201).json('motorcycle instance deleted successfully!');
     } catch (error) {
         console.log(error.message)
         res.status(400).json(error.message);
@@ -76,7 +92,7 @@ export const deleteMcycle = async(req, res) =>{
 export const getMcycle = async(req, res) =>{
 
     try {
-        let getData = await MotorcycleDB.find().sort((a, b) => a-b);
+        let getData = await MotorcycleDB.find().sort();
         
         res.status(201).json(getData);
     } catch (error) {

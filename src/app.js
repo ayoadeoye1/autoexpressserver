@@ -13,7 +13,7 @@ const MONGO_URL = process.env.MONGO_URL;
 const connectDB = async() =>{
     try {
         await mongoose.connect(MONGO_URL, {
-            dbName: "motorhub",
+            dbName: "autoexpress",
             useNewUrlParser: true,
             useUnifiedTopology: true,
           });
@@ -26,7 +26,7 @@ const connectDB = async() =>{
 connectDB();
 
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
 app.use('/api', router);

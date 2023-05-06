@@ -30,3 +30,27 @@ Content-Type: application/json
 
 ###
 DELETE  http://localhost:8000/api/motorcycle/6407e3470e2730b1d60f1e09
+
+###
+GET http://localhost:8000/api/vehicle/all
+
+
+###
+POST http://localhost:8000/api/dealer
+Content-Type: application/json
+
+{
+    "username": "ay",
+    "email": "ay@gmail.com",
+    "password": "ayo",
+    "phoneContact": "2348063399734"
+}
+
+###
+POST http://localhost:8000/api/dealerLog
+Content-Type: application/json
+
+{
+    "email": "ayo@gmail.com",
+    "password": "ayo"
+}

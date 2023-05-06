@@ -53,9 +53,8 @@ export const editAdmin = async(req, res) =>{
 export const deleteAdmin = async(req, res) =>{
 
     try {
-        const user = await AdminDB.findOne({_id: req.params.id});
+        await AdminDB.deleteOne({_id: req.params.id});
 
-        await user.remove();
         res.status(201).json('dealer deleted successfully');
     } catch (error) {
         console.log(error.message)
@@ -66,7 +65,7 @@ export const deleteAdmin = async(req, res) =>{
 export const getAdmins = async(req, res) =>{
 
     try {
-        const user = await AdminDB.find().sort((a, b) => a-b);
+        const user = await AdminDB.find().sort();
 
         res.status(201).json(user);
     } catch (error) {
